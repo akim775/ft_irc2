@@ -6,7 +6,7 @@
 /*   By: ahamini <ahamini@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/12 16:00:24 by ahamini           #+#    #+#             */
-/*   Updated: 2026/01/13 16:02:09 by ahamini          ###   ########.fr       */
+/*   Updated: 2026/01/13 16:13:00 by ahamini          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ int main()
 					}
 				
 					else if (message == "!help") {
-						sendData(sock, "PRIVMSG " + target + " :Commands available: !hello, !date, !ping, !rtfm");
+						sendData(sock, "PRIVMSG " + target + " :Commands available: !hello, !date, !ping, !rtfm, !commands");
 					}
 
 					else if (message == "!date") {
