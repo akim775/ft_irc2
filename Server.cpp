@@ -6,7 +6,7 @@
 /*   By: ahamini <ahamini@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/03 12:01:18 by ahamini           #+#    #+#             */
-/*   Updated: 2026/01/12 16:59:40 by ahamini          ###   ########.fr       */
+/*   Updated: 2026/01/13 14:06:39 by ahamini          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,17 @@
 
 volatile bool g_signal = true;
 
-Server::Server(int port, std::string &password) : _port(port), _password(password), _server_fdsocket(-1), _epoll_fd(-1) {
+Server::Server(int port, std::string &password) : _port(port), _server_fdsocket(-1), _epoll_fd(-1), _password(password) {
 	std::cout << BLUE << "Server constructor with parameters called" << NC << std::endl;
-	(void)_port;
+	//(void)_port;
 
 	char	hostname[1024];
 
 	hostname[1023] = '\0';
-	if (getServerName(hostname, 1023) == 0) {
+	if (gethostname(hostname, 1023) == 0) {
 		_serverName = std::string(hostname);
 	} else {
-		_serverName = "localhost"
+		_serverName = "localhost";
 	}
 	_cmds["PASS"] = &Server::cmd_password;
 	_cmds["NICK"] = &Server::cmd_nickname;
@@ -173,7 +173,7 @@ void	Server::accept_new_client() {
 void	Server::handle_client_data(int fd) {
 	if (_clients.find(fd) == _clients.end()) {
 		std::cerr << RED << "Error : function called on an unknown fd." << NC << std::endl;
-		if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1);
+		if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1)
 			std::cerr << "Error epoll_ctl del: " << strerror(errno) << std::endl;
 		close(fd);
 		return;
@@ -217,6 +217,6 @@ void	Server::handle_client_data(int fd) {
 }
 
 std::string Server::getServerName() const {
-    return this->_serverName;
+	return this->_serverName;
 }
 
