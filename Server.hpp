@@ -6,7 +6,7 @@
 /*   By: ahamini <ahamini@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/03 14:53:30 by ahamini           #+#    #+#             */
-/*   Updated: 2026/01/12 09:04:16 by ahamini          ###   ########.fr       */
+/*   Updated: 2026/01/12 16:31:37 by ahamini          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,11 @@ class Channel;
 
 class Server {
 	private:
-		int	_port;
+		int			_port;
+		int			_server_fdsocket;
+		int			_epoll_fd;
 		std::string	_password;
-		int	_server_fdsocket;
-		int	_epoll_fd;
+		std::string	_serverName;
 		std::map<int, Client> _clients;
 		void	cmd_parsing(int fd, const std::string &command_line);
 		void	cmd_password(int fd, const std::vector<std::string> &args);
@@ -62,6 +63,8 @@ class Server {
 		void	cmd_kick(int fd, const std::vector<std::string> &args);
 		void	cmd_quit(int fd, const std::vector<std::string> &args);
 		void	cmd_part(int fd, const std::vector<std::string> &args);
+		void	cmd_ping(int fd, const std::vector<std::string> &args);
+
 		Client *getClientByNickname(const std::string &nickname);
 		
 		std::map<std::string, void (Server::*)(int, const std::vector<std::string>&)> _cmds;
@@ -89,6 +92,7 @@ class Server {
 		// Getters
 
 		Channel	*getChannel(const std::string &name);
+		std::string getServerName() const;
 	};
 
 extern volatile bool g_signal;

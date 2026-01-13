@@ -6,7 +6,7 @@
 /*   By: ahamini <ahamini@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/24 15:46:43 by ahamini           #+#    #+#             */
-/*   Updated: 2026/01/12 09:08:26 by ahamini          ###   ########.fr       */
+/*   Updated: 2026/01/12 15:22:15 by ahamini          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,14 @@ Client	*Server::getClientByNickname(const std::string &nickname) {
 		}
 	}
 	return (NULL);
+}
+
+void Server::cmd_ping(int fd, const std::vector<std::string> &args)
+{
+	if (args.empty())
+		return;
+	std::string response = "PONG " + args[0] + "\r\n";
+	sendResponse(fd, response);
 }
 
 void Server::cmd_quit(int fd, const std::vector<std::string> &args)
@@ -722,7 +730,7 @@ void	Server::cmd_prvmsg(int fd, const std::vector<std::string> &args) {
 				sendResponse(recipient->getFd(), fullMessage);
 			}
 			else {
-				std::string err = ":localhost 401 " + clientTarget + ":No such nick/channel\r\n";
+				std::string err = ":localhost 401 " + clientTarget + " :No such nick/channel\r\n";
 				sendResponse(fd, err);
 			}
 		}

@@ -6,7 +6,7 @@
 /*   By: ahamini <ahamini@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/03 12:01:18 by ahamini           #+#    #+#             */
-/*   Updated: 2026/01/12 09:05:46 by ahamini          ###   ########.fr       */
+/*   Updated: 2026/01/12 16:59:40 by ahamini          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,15 @@ volatile bool g_signal = true;
 Server::Server(int port, std::string &password) : _port(port), _password(password), _server_fdsocket(-1), _epoll_fd(-1) {
 	std::cout << BLUE << "Server constructor with parameters called" << NC << std::endl;
 	(void)_port;
+
+	char	hostname[1024];
+
+	hostname[1023] = '\0';
+	if (getServerName(hostname, 1023) == 0) {
+		_serverName = std::string(hostname);
+	} else {
+		_serverName = "localhost"
+	}
 	_cmds["PASS"] = &Server::cmd_password;
 	_cmds["NICK"] = &Server::cmd_nickname;
 	_cmds["USER"] = &Server::cmd_username;
@@ -28,6 +37,8 @@ Server::Server(int port, std::string &password) : _port(port), _password(passwor
 	_cmds["TOPIC"] = &Server::cmd_topic;
 	_cmds["QUIT"] = &Server::cmd_quit;
 	_cmds["PART"] = &Server::cmd_part;
+	_cmds["PING"] = &Server::cmd_part;
+
 }
 
 Server::~Server() {
@@ -48,6 +59,23 @@ Server::~Server() {
 }
 
 void Server::onClientDisconnect(int fd) {
+	if (_clients.find(fd) == _clients.end())
+		return;
+
+	Client* leaver = &_clients[fd];
+	std::map<std::string, Channel*>::iterator it = _channels.begin();
+	while (it != _channels.end()) {
+		Channel* chan = it->second;
+		if (chan->isMember(leaver)) {
+			chan->removeClient(fd);
+			if (chan->getClients().empty()) {
+				delete chan;
+				_channels.erase(it++); 
+				continue; 
+			}
+		}
+		++it;
+	}
 	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, NULL);
 	close(fd);
 	_clients.erase(fd);
@@ -143,10 +171,11 @@ void	Server::accept_new_client() {
 }
 
 void	Server::handle_client_data(int fd) {
-	// Verify if the client exists
 	if (_clients.find(fd) == _clients.end()) {
 		std::cerr << RED << "Error : function called on an unknown fd." << NC << std::endl;
-		epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+		if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1);
+			std::cerr << "Error epoll_ctl del: " << strerror(errno) << std::endl;
+		close(fd);
 		return;
 	}
 
@@ -185,5 +214,9 @@ void	Server::handle_client_data(int fd) {
 			return;
 		}
 	}
+}
+
+std::string Server::getServerName() const {
+    return this->_serverName;
 }
 
